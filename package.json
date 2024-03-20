@@ -1,8 +1,8 @@
 {
-  "name": "sample-project",
+  "name": "users-nodejs-project",
   "version": "1.0.0",
-  "description": "Learning NodeJS (like best industry practices)",
-  "main": "index.js",
+  "description": "users-nodejs-project",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,7 @@
     "lint-fix": "eslint --fix .",
     "format": "prettier --write .",
     "format-check": "prettier --check .",
-    "start": "node index.js"
+    "start": "nodemon server.js"
   },
   "author": "sunil-hatkadke",
   "license": "ISC",

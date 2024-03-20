@@ -1,6 +1,6 @@
 # Project Documentation
 
-## sample boilerplate for nodeJs project
+## users nodeJs project
 
 ```sh
 npm run start
