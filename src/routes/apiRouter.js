@@ -4,6 +4,6 @@ import route from './route.json' assert { type: 'json' };
 
 const apiRouter = express.Router();
 
-apiRouter.use(route.API, usersRouter);
+apiRouter.use(route.USERS, usersRouter);
 
 export default apiRouter;
