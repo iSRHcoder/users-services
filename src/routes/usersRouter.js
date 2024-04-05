@@ -9,6 +9,11 @@ import {
   isNameValid,
 } from '../../utils/validator.js';
 import ApiError from '../../utils/ApiError.js';
+import { loggerErrorPath } from '../../constants.js';
+import errorLogger from '../../utils/errorLogger.js';
+import upload from '../../utils/upload.js';
+import uploadCloud from '../../utils/uploadCloud.js';
+import User from '../models/UsersModel.js';
 
 const usersRouter = express.Router();
 
@@ -17,36 +22,39 @@ usersRouter
   .get((req, res) => {
     res.json(usersData);
   })
-  .post((req, res) => {
+  .post(upload.single('avatar'), async (req, res) => {
     const { first_name, last_name, email, mobile, avatar } = req.body;
-    if (
-      first_name &&
-      isNameValid(first_name) &&
-      last_name &&
-      isNameValid(last_name) &&
-      email &&
-      isEmailValid(email) &&
-      mobile &&
-      isMobileValid(mobile) &&
-      avatar &&
-      isAvatarValid(avatar)
-    ) {
-      const id = usersData[usersData.length - 1].id + 1;
-      const newUser = { id, first_name, last_name, email, mobile, avatar };
-      usersData.push(newUser);
-      fs.writeFile('db/users.json', JSON.stringify(usersData), (err) => {
-        if (err) {
-          console.log('Error:', `error in post method - ${err}`);
-          return res
-            .status(500)
-            .json(new ApiError('File operation failed', 500));
-        }
-        res.status(201).json(newUser);
+    console.log(req.body);
+
+    const id = usersData[usersData.length - 1].id + 1;
+    const user = { id, first_name, last_name, email, mobile };
+    if (avatar) {
+      try {
+        const cloudUrl = await uploadCloud(req.file.path);
+        user.avatar = cloudUrl;
+      } catch (error) {
+        console.error('Error uploading file to cloudinary', error);
+        return res.status(500).json(new ApiError('Error uploading file', 500));
+      }
+    }
+
+    try {
+      const newUser = new User({
+        id,
+        first_name,
+        last_name,
+        email,
+        mobile,
+        avatar: user.avatar,
       });
-    } else {
-      res
-        .status(404)
-        .json(new ApiError('Data missing or validation failed', 404));
+      const result = await newUser.save();
+      console.log('result', result);
+      res.status(201).json(result);
+    } catch (err) {
+      errorLogger(loggerErrorPath, req, err);
+      return res
+        .status(500)
+        .json(new ApiError('error in user saving in DB', 500));
     }
   });
 
@@ -64,7 +72,7 @@ usersRouter
       usersData.splice(userIndex, 1);
       fs.writeFile('db/users.json', JSON.stringify(usersData), (err) => {
         if (err) {
-          console.log('Error:', `error in delete method - ${err}`);
+          errorLogger(loggerErrorPath, req, err);
           return res
             .status(500)
             .json(new ApiError('File operation failed', 500));
@@ -96,7 +104,7 @@ usersRouter
 
       fs.writeFile('db/users.json', JSON.stringify(usersData), (err) => {
         if (err) {
-          console.log('Error:', `error in put method - ${err}`);
+          errorLogger(loggerErrorPath, req, err);
           return res
             .status(500)
             .json(new ApiError('File operation failed', 500));
