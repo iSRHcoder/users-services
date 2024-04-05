@@ -24,10 +24,8 @@ usersRouter
   })
   .post(upload.single('avatar'), async (req, res) => {
     const { first_name, last_name, email, mobile, avatar } = req.body;
-    console.log(req.body);
 
-    const id = usersData[usersData.length - 1].id + 1;
-    const user = { id, first_name, last_name, email, mobile };
+    const user = { first_name, last_name, email, mobile };
     if (avatar) {
       try {
         const cloudUrl = await uploadCloud(req.file.path);
@@ -40,7 +38,6 @@ usersRouter
 
     try {
       const newUser = new User({
-        id,
         first_name,
         last_name,
         email,
@@ -48,7 +45,6 @@ usersRouter
         avatar: user.avatar,
       });
       const result = await newUser.save();
-      console.log('result', result);
       res.status(201).json(result);
     } catch (err) {
       errorLogger(loggerErrorPath, req, err);
