@@ -2,11 +2,11 @@ import fs from 'fs';
 
 const logger = (loggerFilePath) => {
   return (req, res, next) => {
-    const { method, url } = req;
-    const loggerMsg = `${new Date()} ${method} \n`;
+    const { method, url, headers, ip } = req;
+    const loggerMsg = `${new Date()} - ${method} ${headers.host}${url} ${ip} ${headers['user-agent']} \n`;
     fs.appendFile(loggerFilePath, loggerMsg, (err) => {
       if (err) {
-        console.log('Error in loggerMiddleware :', err);
+        console.log(err);
       }
       next();
     });
